@@ -162,6 +162,16 @@ Buka browser: **http://localhost:3000**
 npm test
 ```
 
+Mencakup: engine (DNS/TCP/HTTP/SSL/defacement/domain), database, **serta routes & middleware auth** (login, ganti password + token revocation, manajemen user, proteksi akses admin-only) — total 85 test.
+
+## 🔍 Linting
+
+```bash
+npm run lint
+```
+
+Mengecek gaya penulisan kode (ESLint) — terpisah dari `npm test` yang mengecek perilaku/fungsi.
+
 ---
 
 ## ⚙️ Menambahkan Website Kemhan

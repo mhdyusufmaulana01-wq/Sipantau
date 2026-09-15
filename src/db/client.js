@@ -478,7 +478,10 @@ class DbClient {
 }
 
 // Ensure data directory exists
-const defaultDbPath = path.join(__dirname, '../../data.db');
+// [TEST] SIPANTAU_DB_PATH memungkinkan test (routes/auth) memakai database
+// sementara terpisah, bukan data.db produksi. Tidak pernah diset di
+// deployment normal, jadi tidak mengubah perilaku produksi sama sekali.
+const defaultDbPath = process.env.SIPANTAU_DB_PATH || path.join(__dirname, '../../data.db');
 if (!fs.existsSync(path.dirname(defaultDbPath))) {
     fs.mkdirSync(path.dirname(defaultDbPath), { recursive: true });
 }

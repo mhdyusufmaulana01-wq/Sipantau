@@ -388,7 +388,7 @@ function selectMonitor(id, forceScroll = false) {
     let sslRemaining = 'N/A';
     let sslDateFormatted = '';
     let domainRemaining = 'N/A';
-    let domainDateFormatted = '';
+    let domainDateFormatted; // selalu ditimpa di bawah (kedua cabang kondisi domain), tidak perlu nilai awal
     
     if (checks.length > 0) {
         const lastCheck = checks[checks.length - 1];

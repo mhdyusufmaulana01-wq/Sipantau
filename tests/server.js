@@ -9,7 +9,7 @@ app.get('/normal', (req, res) => {
   res.status(200).send('OK');
 });
 
-app.get('/timeout', (req, res) => {
+app.get('/timeout', (_req, _res) => {
   // Never responds to simulate timeout
 });
 

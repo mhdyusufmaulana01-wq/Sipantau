@@ -284,6 +284,7 @@ async function notifyDeepScanDefacement(monitor, flaggedPages, pagesScanned) {
 
 <b>Website:</b> ${monitor.name}
 <b>URL Utama:</b> ${monitor.url}
+<b>Waktu Scan:</b> ${timeStr} WIB
 <b>Halaman Diperiksa:</b> ${pagesScanned}
 <b>Halaman Bermasalah:</b> ${flaggedPages.length}
 
