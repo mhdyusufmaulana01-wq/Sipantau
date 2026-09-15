@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIPANTAU - Sistem Informasi Pemantauan</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        /* Apple-like system font stack */
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            background-color: #0d1117; /* Very dark premium gray */
+            color: #c9d1d9;
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #30363d; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #484f58; }
+        
+        .glass-panel {
+            background-color: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        .bar { 
+            border-radius: 9999px; 
+            transition: transform 0.1s ease;
+            position: relative;
+        }
+        .bar:hover {
+            transform: scaleY(1.3);
+            z-index: 10;
+        }
+        
+        /* Tooltip */
+        .tooltip .tooltip-text {
+            visibility: hidden;
+            background-color: #0d1117;
+            color: #c9d1d9;
+            text-align: left;
+            border-radius: 6px;
+            padding: 8px 12px;
+            position: absolute;
+            z-index: 50;
+            bottom: 120%;
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0;
+            transition: opacity 0.2s;
+            white-space: nowrap;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            border: 1px solid #30363d;
+            font-size: 11px;
+            font-weight: 500;
+            pointer-events: none;
+        }
+        .tooltip .tooltip-text::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: #30363d transparent transparent transparent;
+        }
+        .tooltip:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+        }
+        
+        .active-monitor {
+            background-color: #1f2631 !important;
+            border-left: 3px solid #10b981;
+        }
+
+        table { border-collapse: collapse; }
+        th, td { border-bottom: 1px solid #30363d; }
+        th {
+            font-size: 11px;
+            letter-spacing: 0.05em;
+            color: #8b949e;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body class="h-screen flex flex-col overflow-hidden">
+    <!-- Navbar -->
+    <nav class="h-16 bg-[#161b22] border-b border-[#30363d] px-6 md:px-8 shrink-0 flex justify-between items-center shadow-sm z-20">
+        <div class="flex items-center gap-3">
+            <i class="fa-solid fa-shield-halved text-emerald-400 text-xl"></i>
+            <h1 class="text-[17px] font-bold text-white tracking-wide">SI<span class="text-emerald-500 font-semibold">PANTAU</span></h1>
+            <span class="hidden sm:inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 tracking-wide ml-1">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse mr-1.5"></span>Monitoring
+            </span>
+        </div>
+        <div class="flex items-center gap-3">
+            <!-- 1. Live Indicator (Hitung Mundur) -->
+            <div class="flex items-center h-9 bg-[#0d1117] border border-[#30363d] px-3.5 rounded-lg text-[13px] text-gray-400">
+                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span class="font-medium tracking-wide text-gray-300 ml-2">Live <span id="refresh-countdown" class="font-mono text-white ml-0.5">60s</span></span>
+                <div class="w-px h-4 bg-[#30363d] mx-2.5"></div>
+                <button onclick="manualRefresh()" class="text-gray-400 hover:text-white transition-colors flex items-center justify-center w-6 h-6 rounded hover:bg-[#21262d]" title="Refresh Sekarang">
+                    <i class="fa-solid fa-arrows-rotate text-[12px]"></i>
+                </button>
+            </div>
+
+            <!-- 2. Panduan Error Button -->
+            <button onclick="openKamusModal()" id="btn-kamus" title="Panduan & Kamus Gangguan" class="h-9 flex items-center gap-2 text-[13px] font-medium text-amber-300 hover:text-amber-200 border border-amber-500/30 hover:border-amber-400/60 bg-[#21262d] hover:bg-[#28303b] px-4 rounded-lg transition-all shadow-sm">
+                <i class="fa-solid fa-book-open text-amber-400 text-[13px]"></i>
+                <span class="hidden sm:inline">Panduan Error</span>
+            </button>
+
+            <!-- 3. Auth Section (Kelola Monitor / Login / Logout) -->
+            <div id="auth-section" class="flex items-center gap-3">
+                <!-- Injected via JS -->
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <div class="flex flex-1 overflow-hidden">
+        <!-- Left Sidebar (List of Monitors) -->
+        <aside class="w-80 bg-[#161b22] border-r border-[#30363d] flex flex-col shrink-0 z-10">
+            <div class="p-4 border-b border-[#30363d]">
+                <input type="text" id="search-monitor" placeholder="Cari website..." class="w-full bg-[#0d1117] border border-[#30363d] rounded-md px-3 py-2 text-[13px] text-white focus:outline-none focus:border-emerald-500 transition-colors placeholder-gray-500">
+            </div>
+            <div id="sidebar-list" class="flex-1 overflow-y-auto p-3 space-y-1">
+                <div class="text-center py-10 text-gray-500 text-[13px]">Memuat...</div>
+            </div>
+        </aside>
+
+        <!-- Right Content (Detail View) -->
+        <main class="flex-1 overflow-y-auto bg-[#0d1117] p-8">
+            <div id="detail-empty" class="h-full flex flex-col items-center justify-center text-gray-500">
+                <i class="fa-solid fa-desktop text-4xl mb-4 text-[#30363d]"></i>
+                <p class="text-[13px]">Pilih website di menu samping untuk melihat detail.</p>
+            </div>
+            
+            <div id="detail-content" class="hidden max-w-5xl mx-auto">
+                <!-- Header -->
+                <div class="mb-8 border-b border-[#30363d] pb-6">
+                    <h2 id="d-name" class="text-2xl font-semibold text-white mb-1.5 tracking-tight">Monitor Name</h2>
+                    <a id="d-url" href="#" target="_blank" class="text-emerald-400 hover:text-emerald-300 text-[13px] flex items-center gap-1 w-fit transition-colors">
+                        <i class="fa-solid fa-arrow-up-right-from-square text-[11px]"></i> <span id="d-url-text">https://...</span>
+                    </a>
+                </div>
+
+                <!-- Big Bars Section -->
+                <div class="glass-panel p-6 mb-6">
+                    <div class="flex justify-between items-center mb-5">
+                        <span class="text-[12px] font-medium text-gray-400">Riwayat 40 Pengecekan Terakhir</span>
+                        <span id="d-status-badge" class="bg-emerald-500/10 text-emerald-400 px-3 py-1 rounded text-[11px] font-bold uppercase tracking-wide border border-emerald-500/20">UP</span>
+                    </div>
+                    <div id="d-big-bars" class="flex items-end justify-between h-16 gap-[3px] mt-6">
+                        <!-- Bars injected via JS -->
+                    </div>
+                </div>
+
+                <!-- Stats Grid -->
+                <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
+                    <div class="glass-panel p-5 text-center">
+                        <p class="text-[11px] text-gray-400 uppercase tracking-wider mb-2 font-medium">Respon Saat Ini</p>
+                        <p id="d-ping" class="text-xl font-semibold text-white tracking-tight">N/A</p>
+                    </div>
+                    <div class="glass-panel p-5 text-center">
+                        <p class="text-[11px] text-gray-400 uppercase tracking-wider mb-2 font-medium">Rata-rata Respon</p>
+                        <p id="d-avg-ping" class="text-xl font-semibold text-white tracking-tight">N/A</p>
+                    </div>
+                    <div class="glass-panel p-5 text-center">
+                        <p class="text-[11px] text-gray-400 uppercase tracking-wider mb-2 font-medium">Uptime</p>
+                        <p id="d-uptime" class="text-xl font-semibold text-white tracking-tight">100%</p>
+                    </div>
+                    <div class="glass-panel p-5 text-center">
+                        <p class="text-[11px] text-gray-400 uppercase tracking-wider mb-2 font-medium">Sisa Masa Aktif SSL</p>
+                        <p id="d-ssl" class="text-xl font-semibold text-emerald-400 tracking-tight">N/A</p>
+                        <p id="d-ssl-date" class="text-[10px] text-gray-500 mt-1 font-mono"></p>
+                    </div>
+                    <div class="glass-panel p-5 text-center tooltip">
+                        <p class="text-[11px] text-gray-400 uppercase tracking-wider mb-2 font-medium">Security Header</p>
+                        <p id="d-secheaders-grade" class="text-xl font-semibold text-white tracking-tight">N/A</p>
+                        <div class="tooltip-text min-w-[240px]" id="d-secheaders-tooltip"></div>
+                    </div>
+                </div>
+
+                <!-- Events Table -->
+                <div class="glass-panel overflow-hidden mb-8">
+                    <div class="px-5 py-4 border-b border-[#30363d] bg-[#161b22]">
+                        <h3 class="text-[13px] font-semibold text-white">Log Kejadian Penting</h3>
+                    </div>
+                    <div class="overflow-x-auto max-h-96">
+                        <table class="w-full text-left">
+                            <thead class="bg-[#0d1117] sticky top-0 z-20 shadow-[0_1px_0_0_#30363d]">
+                                <tr class="uppercase">
+                                    <th class="p-4 w-24 text-center bg-[#0d1117]">Status</th>
+                                    <th class="p-4 bg-[#0d1117]">Waktu</th>
+                                    <th class="p-4 bg-[#0d1117]">Akar Masalah</th>
+                                    <th class="p-4 bg-[#0d1117]">Pesan Error</th>
+                                </tr>
+                            </thead>
+                            <tbody id="d-events" class="text-[12px] divide-y divide-[#30363d] bg-[#161b22]">
+                                <!-- Events injected via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- ===== MODAL: KAMUS GANGGUAN ===== -->
+    <div id="kamus-modal" class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4" onclick="handleKamusBackdrop(event)">
+        <div class="bg-[#161b22] border border-[#30363d] rounded-xl w-full max-w-4xl flex flex-col max-h-[90vh] shadow-2xl">
+            <!-- Header -->
+            <div class="p-5 border-b border-[#30363d] flex justify-between items-center shrink-0">
+                <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center">
+                        <i class="fa-solid fa-book-open text-amber-400"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-[15px] font-semibold text-white tracking-tight">Kamus Gangguan &amp; Panduan Tindakan</h3>
+                        <p class="text-[11px] text-gray-500 mt-0.5">Penjelasan kode error beserta langkah penanganan untuk Tim IT</p>
+                    </div>
+                </div>
+                <button onclick="closeKamusModal()" class="text-gray-500 hover:text-white transition-colors w-8 h-8 flex items-center justify-center rounded-lg hover:bg-[#21262d]">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <!-- Search -->
+            <div class="px-5 py-3 border-b border-[#30363d] shrink-0">
+                <div class="relative">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-[12px]"></i>
+                    <input type="text" id="kamus-search" oninput="filterKamus(this.value)" placeholder="Cari kode error atau kata kunci..." class="w-full bg-[#0d1117] border border-[#30363d] rounded-lg pl-8 pr-4 py-2 text-[13px] text-white focus:outline-none focus:border-amber-500/50 transition-colors placeholder-gray-600">
+                </div>
+            </div>
+
+            <!-- Content (scrollable) -->
+            <div class="overflow-y-auto flex-1 p-5 space-y-3" id="kamus-content">
+
+                <!-- =============================================
+                     Section: Lapisan Jaringan & Domain
+                     ============================================= -->
+                <div class="kamus-section">
+                    <div class="flex items-center gap-2 mb-3">
+                        <div class="w-1 h-4 bg-red-500 rounded-full"></div>
+                        <span class="text-[11px] font-bold text-red-400 uppercase tracking-widest">Lapisan Jaringan &amp; Domain</span>
+                    </div>
+                    <div class="space-y-2" id="section-network">
+
+                        <!-- DNS_FAILED -->
+                        <div class="kamus-item bg-[#0d1117] border border-[#30363d] rounded-lg p-4 hover:border-[#484f58] transition-colors">
+                            <div class="flex items-center gap-2 mb-1.5">
+                                <span class="text-[15px]">🔍</span>
+                                <span class="text-[14px] font-semibold text-white flex-1">Alamat Domain Tidak Ditemukan</span>
+                                <code class="kamus-code text-[10px] bg-gray-800 text-gray-500 border border-gray-700 px-1.5 py-0.5 rounded font-mono shrink-0">DNS_FAILED</code>
+                            </div>
+                            <p class="kamus-desc text-[12px] text-gray-400 leading-relaxed mb-3">Ibarat mencari nama seseorang di buku telepon tapi namanya tidak ada — sistem tidak bisa menemukan alamat dari nama domain yang dituju (misalnya <code class="text-amber-400">kemhan.go.id</code>). Biasanya karena domain kedaluwarsa, salah ketik URL, atau DNS server bermasalah.</p>
+                            <div class="bg-amber-500/5 rounded-lg p-3 border border-amber-500/20 flex items-start gap-2.5">
+                                <span class="text-[13px] shrink-0">📞</span>
+                                <p class="text-[12px] text-amber-200/90 leading-relaxed"><strong class="text-amber-300">Yang perlu dilakukan:</strong> Hubungi Tim Jaringan / Pengelola Domain, lalu cek masa aktif domain dan ejaan URL di panel Admin.</p>
+                            </div>
+                        </div>
+
+                        <!-- TCP_CONNECTION_REFUSED -->
+                        <div class="kamus-item bg-[#0d1117] border border-[#30363d] rounded-lg p-4 hover:border-[#484f58] transition-colors">
+                            <div class="flex items-center gap-2 mb-1.5">
+                                <span class="text-[15px]">🚫</span>
+                                <span class="text-[14px] font-semibold text-white flex-1">Server Menolak Koneksi</span>
+                                <code class="kamus-code text-[10px] bg-gray-800 text-gray-500 border border-gray-700 px-1.5 py-0.5 rounded font-mono shrink-0">TCP_CONNECTION_REFUSED</code>
+                            </div>
+                            <p class="kamus-desc text-[12px] text-gray-400 leading-relaxed mb-3">Rumahnya ditemukan, tapi pintunya dikunci dari dalam — server hidup namun aplikasi web-nya (Nginx/Apache/IIS) tidak mau menerima koneksi masuk. Biasanya layanan web server mati atau diblokir firewall.</p>
+                            <div class="bg-amber-500/5 rounded-lg p-3 border border-amber-500/20 flex items-start gap-2.5">
+                                <span class="text-[13px] shrink-0">📞</span>
+                                <p class="text-[12px] text-amber-200/90 leading-relaxed"><strong class="text-amber-300">Yang perlu dilakukan:</strong> Hubungi Sysadmin / Tim Server untuk mengecek apakah service web server berjalan dan aturan firewall-nya.</p>
+                            </div>
+                        </div>
+
+                        <!-- TCP_TIMEOUT -->
+                        <div class="kamus-item bg-[#0d1117] border border-[#30363d] rounded-lg p-4 hover:border-[#484f58] transition-colors">
+                            <div class="flex items-center gap-2 mb-1.5">
+                                <span class="text-[15px]">⏱️</span>
+                                <span class="text-[14px] font-semibold text-white flex-1">Tidak Ada Respon Sama Sekali</span>
+                                <code class="kamus-code text-[10px] bg-gray-800 text-gray-500 border border-gray-700 px-1.5 py-0.5 rounded font-mono shrink-0">TCP_TIMEOUT</code>
+                            </div>
+                            <p class="kamus-desc text-[12px] text-gray-400 leading-relaxed mb-3">Dipanggil berkali-kali tapi tidak menjawab sampai waktu habis — server benar-benar bisu, tidak ada respon apapun. Kemungkinan server fisik mati, kabel data center terputus, atau sedang terkena serangan DDoS.</p>
+                            <div class="bg-amber-500/5 rounded-lg p-3 border border-amber-500/20 flex items-start gap-2.5">
+                                <span class="text-[13px] shrink-0">📞</span>
+                                <p class="text-[12px] text-amber-200/90 leading-relaxed"><strong class="text-amber-300">Yang perlu dilakukan:</strong> Segera hubungi Tim Infrastruktur &amp; Data Center untuk cek kondisi fisik server dan jalur ISP.</p>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- Section: HTTP / Aplikasi -->
+                <div class="kamus-section">
+                    <div class="flex items-center gap-2 mb-3 mt-4">
+                        <div class="w-1 h-4 bg-orange-500 rounded-full"></div>
+                        <span class="text-[11px] font-bold text-orange-400 uppercase tracking-widest">Lapisan Aplikasi &amp; Server Web (Kode HTTP)</span>
+                    </div>
+                    <div class="space-y-2">
+
+                        <!-- HTTP_4XX -->
+                        <div class="kamus-item bg-[#0d1117] border border-[#30363d] rounded-lg p-4 hover:border-[#484f58] transition-colors">
+                            <div class="flex items-center gap-2 mb-1.5">
+                                <span class="text-[15px]">🚷</span>
+                                <span class="text-[14px] font-semibold text-white flex-1">Error Klien — Akses Ditolak / Halaman Tidak Ditemukan</span>
+                                <code class="kamus-code text-[10px] bg-gray-800 text-gray-500 border border-gray-700 px-1.5 py-0.5 rounded font-mono shrink-0">HTTP_4XX</code>
+                            </div>
+                            <p class="kamus-desc text-[12px] text-gray-400 leading-relaxed mb-3">Server hidup dan merespon, tetapi menolak permintaan karena kesalahan di sisi permintaan itu sendiri — misalnya diblokir WAF (403), IP monitoring diblokir firewall, URL salah/halaman dihapus (404), atau sistem monitoring di-rate limit (429).</p>
+                            <div class="bg-amber-500/5 rounded-lg p-3 border border-amber-500/20 flex items-start gap-2.5">
+                                <span class="text-[13px] shrink-0">📞</span>
+                                <p class="text-[12px] text-amber-200/90 leading-relaxed"><strong class="text-amber-300">Yang perlu dilakukan:</strong> Hubungi Tim Keamanan / Pengelola Konten Web, cek kode HTTP spesifik di kolom "Pesan Error", lalu verifikasi URL atau whitelist IP monitor.</p>
+                            </div>
+                        </div>
+
+                        <!-- HTTP_5XX -->
+                        <div class="kamus-item bg-[#0d1117] border border-[#30363d] rounded-lg p-4 hover:border-[#484f58] transition-colors">
+                            <div class="flex items-center gap-2 mb-1.5">
+                                <span class="text-[15px]">💥</span>
+                                <span class="text-[14px] font-semibold text-white flex-1">Error Server — Aplikasi Rusak / Kelebihan Beban</span>
+                                <code class="kamus-code text-[10px] bg-gray-800 text-gray-500 border border-gray-700 px-1.5 py-0.5 rounded font-mono shrink-0">HTTP_5XX</code>
+                            </div>
+                            <p class="kamus-desc text-[12px] text-gray-400 leading-relaxed mb-3">Server hidup dan bisa dihubungi, tapi ada masalah di dalam kode programnya sendiri — bagaikan kasir yang masuk kerja tapi mesinnya rusak dan tidak bisa melayani. Bisa berupa error kode program (500), proxy tidak bisa ke aplikasi (502), server kelebihan muatan (503), atau aplikasi terlalu lama merespon (504).</p>
+                            <div class="bg-amber-500/5 rounded-lg p-3 border border-amber-500/20 flex items-start gap-2.5">
+                                <span class="text-[13px] shrink-0">📞</span>
+                                <p class="text-[12px] text-amber-200/90 leading-relaxed"><strong class="text-amber-300">Yang perlu dilakukan:</strong> Hubungi Tim Developer / Programmer Web untuk membuka log error aplikasi dan mengecek penggunaan RAM/CPU server.</p>
+                            </div>
+                        </div>
+
+                        <!-- TOO_MANY_REDIRECTS -->
+                        <div class="kamus-item bg-[#0d1117] border border-[#30363d] rounded-lg p-4 hover:border-[#484f58] transition-colors">
+                            <div class="flex items-center gap-2 mb-1.5">
+                                <span class="text-[15px]">🔄</span>
+                                <span class="text-[14px] font-semibold text-white flex-1">Redirect Tak Terbatas (Loop)</span>
+                                <code class="kamus-code text-[10px] bg-gray-800 text-gray-500 border border-gray-700 px-1.5 py-0.5 rounded font-mono shrink-0">TOO_MANY_REDIRECTS</code>
+                            </div>
+                            <p class="kamus-desc text-[12px] text-gray-400 leading-relaxed mb-3">Server terus-menerus mengarahkan ke URL lain tanpa berhenti, membentuk lingkaran tidak berujung — sistem berhenti setelah 10 redirect agar tidak terjebak selamanya. Biasanya karena konfigurasi redirect di Nginx saling melingkar atau middleware CMS salah konfigurasi.</p>
+                            <div class="bg-amber-500/5 rounded-lg p-3 border border-amber-500/20 flex items-start gap-2.5">
+                                <span class="text-[13px] shrink-0">📞</span>
+                                <p class="text-[12px] text-amber-200/90 leading-relaxed"><strong class="text-amber-300">Yang perlu dilakukan:</strong> Hubungi Sysadmin untuk memeriksa konfigurasi redirect di Nginx/Apache.</p>
+                            </div>
+                        </div>
+
+                        <!-- HTTP_ERROR -->
+                        <div class="kamus-item bg-[#0d1117] border border-[#30363d] rounded-lg p-4 hover:border-[#484f58] transition-colors">
+                            <div class="flex items-center gap-2 mb-1.5">
+                                <span class="text-[15px]">⚠️</span>
+                                <span class="text-[14px] font-semibold text-white flex-1">Kesalahan HTTP Tidak Terkategori</span>
+                                <code class="kamus-code text-[10px] bg-gray-800 text-gray-500 border border-gray-700 px-1.5 py-0.5 rounded font-mono shrink-0">HTTP_ERROR</code>
+                            </div>
+                            <p class="kamus-desc text-[12px] text-gray-400 leading-relaxed mb-3">Terjadi kesalahan saat melakukan permintaan HTTP yang tidak termasuk kategori lainnya — bisa karena koneksi terputus di tengah proses atau error jaringan tingkat rendah yang tidak terklasifikasi.</p>
+                            <div class="bg-amber-500/5 rounded-lg p-3 border border-amber-500/20 flex items-start gap-2.5">
+                                <span class="text-[13px] shrink-0">📞</span>
+                                <p class="text-[12px] text-amber-200/90 leading-relaxed"><strong class="text-amber-300">Yang perlu dilakukan:</strong> Hubungi Tim Developer untuk investigasi, cek log sistem monitoring untuk detail error.</p>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- Section: Timeout -->
+                <div class="kamus-section">
+                    <div class="flex items-center gap-2 mb-3 mt-4">
+                        <div class="w-1 h-4 bg-blue-500 rounded-full"></div>
+                        <span class="text-[11px] font-bold text-blue-400 uppercase tracking-widest">Timeout &amp; Respon Lambat</span>
+                    </div>
+                    <div class="space-y-2">
+
+                        <!-- TIMEOUT -->
+                        <div class="kamus-item bg-[#0d1117] border border-[#30363d] rounded-lg p-4 hover:border-[#484f58] transition-colors">
+                            <div class="flex items-center gap-2 mb-1.5">
+                                <span class="text-[15px]">🐌</span>
+                                <span class="text-[14px] font-semibold text-white flex-1">Halaman Terlalu Lama Merespon</span>
+                                <code class="kamus-code text-[10px] bg-gray-800 text-gray-500 border border-gray-700 px-1.5 py-0.5 rounded font-mono shrink-0">TIMEOUT</code>
+                            </div>
+                            <p class="kamus-desc text-[12px] text-gray-400 leading-relaxed mb-3">Server bisa dihubungi dan port terbuka, namun proses memuat halaman web memakan waktu melebihi batas yang ditetapkan (default: 5 detik). Biasanya tanda server sedang kewalahan — traffic tinggi, query database berat, atau RAM/CPU hampir habis.</p>
+                            <div class="bg-amber-500/5 rounded-lg p-3 border border-amber-500/20 flex items-start gap-2.5">
+                                <span class="text-[13px] shrink-0">📞</span>
+                                <p class="text-[12px] text-amber-200/90 leading-relaxed"><strong class="text-amber-300">Yang perlu dilakukan:</strong> Hubungi Tim Sysadmin &amp; Developer untuk memantau penggunaan CPU &amp; RAM server.</p>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- Section: SSL -->
+                <div class="kamus-section">
+                    <div class="flex items-center gap-2 mb-3 mt-4">
+                        <div class="w-1 h-4 bg-yellow-500 rounded-full"></div>
+                        <span class="text-[11px] font-bold text-yellow-400 uppercase tracking-widest">Keamanan &amp; Sertifikat SSL (Gembok HTTPS)</span>
+                    </div>
+                    <div class="space-y-2">
+
+                        <!-- SSL_CERT_EXPIRED -->
+                        <div class="kamus-item bg-[#0d1117] border border-red-500/30 rounded-lg p-4 hover:border-red-500/50 transition-colors">
+                            <div class="flex items-center gap-2 mb-1.5">
+                                <span class="text-[15px]">🔓</span>
+                                <span class="text-[14px] font-semibold text-white flex-1">Sertifikat Keamanan Kedaluwarsa</span>
+                                <code class="kamus-code text-[10px] bg-gray-800 text-gray-500 border border-gray-700 px-1.5 py-0.5 rounded font-mono shrink-0">SSL_CERT_EXPIRED</code>
+                            </div>
+                            <p class="kamus-desc text-[12px] text-gray-400 leading-relaxed mb-3">"Gembok" keamanan HTTPS sudah melewati tanggal masa berlakunya. Browser modern (Chrome, Firefox) akan menampilkan peringatan merah besar kepada semua pengunjung dan memblokir akses publik.</p>
+                            <div class="bg-red-500/10 rounded-lg p-3 border border-red-500/30 flex items-start gap-2.5">
+                                <span class="text-[13px] shrink-0">⚠️</span>
+                                <p class="text-[12px] text-red-200/90 leading-relaxed"><strong class="text-red-400">PRIORITAS TINGGI — Yang perlu dilakukan:</strong> SEGERA hubungi Tim Keamanan / Sysadmin untuk memperpanjang sertifikat SSL (Let's Encrypt/DigiCert) dan aktifkan auto-renewal agar tidak terulang.</p>
+                            </div>
+                        </div>
+
+                        <!-- SSL_ERROR -->
+                        <div class="kamus-item bg-[#0d1117] border border-[#30363d] rounded-lg p-4 hover:border-[#484f58] transition-colors">
+                            <div class="flex items-center gap-2 mb-1.5">
+                                <span class="text-[15px]">🔐</span>
+                                <span class="text-[14px] font-semibold text-white flex-1">Masalah Konfigurasi Sertifikat SSL</span>
+                                <code class="kamus-code text-[10px] bg-gray-800 text-gray-500 border border-gray-700 px-1.5 py-0.5 rounded font-mono shrink-0">SSL_ERROR</code>
+                            </div>
+                            <p class="kamus-desc text-[12px] text-gray-400 leading-relaxed mb-3">Sertifikat keamanannya ada dan belum expired, namun ada yang tidak beres — misalnya sertifikat yang dipasang bukan milik domain tersebut (hostname tidak cocok), atau menggunakan sertifikat self-signed.</p>
+                            <div class="bg-amber-500/5 rounded-lg p-3 border border-amber-500/20 flex items-start gap-2.5">
+                                <span class="text-[13px] shrink-0">📞</span>
+                                <p class="text-[12px] text-amber-200/90 leading-relaxed"><strong class="text-amber-300">Yang perlu dilakukan:</strong> Hubungi Tim Sysadmin untuk menyesuaikan konfigurasi SSL di Nginx/Apache. Jika website internal, aktifkan "Abaikan SSL" di panel Admin.</p>
+                            </div>
+                        </div>
+
+                        <!-- SSL_TIMEOUT -->
+                        <div class="kamus-item bg-[#0d1117] border border-[#30363d] rounded-lg p-4 hover:border-[#484f58] transition-colors">
+                            <div class="flex items-center gap-2 mb-1.5">
+                                <span class="text-[15px]">⏳</span>
+                                <span class="text-[14px] font-semibold text-white flex-1">Timeout Saat Negosiasi Enkripsi SSL</span>
+                                <code class="kamus-code text-[10px] bg-gray-800 text-gray-500 border border-gray-700 px-1.5 py-0.5 rounded font-mono shrink-0">SSL_TIMEOUT</code>
+                            </div>
+                            <p class="kamus-desc text-[12px] text-gray-400 leading-relaxed mb-3">Koneksi berhasil ke server, tetapi proses "jabat tangan" enkripsi SSL/TLS tidak selesai dalam batas waktu. Biasanya terjadi ketika server kelebihan beban atau ada masalah konfigurasi TLS.</p>
+                            <div class="bg-amber-500/5 rounded-lg p-3 border border-amber-500/20 flex items-start gap-2.5">
+                                <span class="text-[13px] shrink-0">📞</span>
+                                <p class="text-[12px] text-amber-200/90 leading-relaxed"><strong class="text-amber-300">Yang perlu dilakukan:</strong> Hubungi Tim Sysadmin untuk memeriksa performa server dan mengoptimasi konfigurasi TLS.</p>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- Section: Deteksi Keamanan Konten (Fitur Andalan SIPANTAU) -->
+                <div class="kamus-section">
+                    <div class="flex items-center gap-2 mb-3 mt-4">
+                        <div class="w-1 h-4 bg-purple-500 rounded-full"></div>
+                        <span class="text-[11px] font-bold text-purple-400 uppercase tracking-widest">Deteksi Keamanan Konten (Fitur Khusus SIPANTAU)</span>
+                    </div>
+                    <div class="space-y-2">
+
+                        <!-- DEFACEMENT_DETECTED -->
+                        <div class="kamus-item bg-[#0d1117] border border-red-500/30 rounded-lg p-4 hover:border-red-500/50 transition-colors">
+                            <div class="flex items-center gap-2 mb-1.5">
+                                <span class="text-[15px]">🚨</span>
+                                <span class="text-[14px] font-semibold text-red-300 flex-1">Indikasi Peretasan / Judi Online</span>
+                                <code class="kamus-code text-[10px] bg-gray-800 text-gray-500 border border-gray-700 px-1.5 py-0.5 rounded font-mono shrink-0">DEFACEMENT_DETECTED</code>
+                            </div>
+                            <p class="kamus-desc text-[12px] text-gray-400 leading-relaxed mb-3">Situs berhasil diakses (HTTP 200), namun isi konten halaman telah disusupi kata kunci judi online ("slot gacor", "sbobet") atau pesan peretas ("hacked by"). <strong class="text-red-400">Sangat berbahaya bagi citra instansi pertahanan.</strong></p>
+                            <div class="bg-red-500/10 rounded-lg p-3 border border-red-500/30 flex items-start gap-2.5">
+                                <span class="text-[13px] shrink-0">🚨</span>
+                                <p class="text-[12px] text-red-200/90 leading-relaxed"><strong class="text-red-400">TINDAKAN DARURAT — Yang perlu dilakukan:</strong> SEGERA hubungi Tim CSIRT / Keamanan Siber Kemhan, isolasi web server dari internet publik, lalu restore backup aman &amp; lakukan audit forensik.</p>
+                            </div>
+                        </div>
+
+                        <!-- KEYWORD_MISSING -->
+                        <div class="kamus-item bg-[#0d1117] border border-[#30363d] rounded-lg p-4 hover:border-[#484f58] transition-colors">
+                            <div class="flex items-center gap-2 mb-1.5">
+                                <span class="text-[15px]">🔎</span>
+                                <span class="text-[14px] font-semibold text-white flex-1">Kata Kunci Wajib Tidak Ditemukan</span>
+                                <code class="kamus-code text-[10px] bg-gray-800 text-gray-500 border border-gray-700 px-1.5 py-0.5 rounded font-mono shrink-0">KEYWORD_MISSING</code>
+                            </div>
+                            <p class="kamus-desc text-[12px] text-gray-400 leading-relaxed mb-3">Situs merespon tapi tidak menampilkan kata kunci yang diharapkan (misalnya nama instansi). Menandakan aplikasi mengalami blank page putih, redirect ke halaman maintenance, atau template gagal merender.</p>
+                            <div class="bg-amber-500/5 rounded-lg p-3 border border-amber-500/20 flex items-start gap-2.5">
+                                <span class="text-[13px] shrink-0">📞</span>
+                                <p class="text-[12px] text-amber-200/90 leading-relaxed"><strong class="text-amber-300">Yang perlu dilakukan:</strong> Hubungi Tim Developer Aplikasi untuk cek error log web server dan buka URL target secara manual di browser.</p>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- Section: Lainnya -->
+                <div class="kamus-section">
+                    <div class="flex items-center gap-2 mb-3 mt-4">
+                        <div class="w-1 h-4 bg-gray-500 rounded-full"></div>
+                        <span class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">Lainnya</span>
+                    </div>
+                    <div class="space-y-2">
+
+                        <!-- INVALID_URL -->
+                        <div class="kamus-item bg-[#0d1117] border border-[#30363d] rounded-lg p-4 hover:border-[#484f58] transition-colors">
+                            <div class="flex items-center gap-2 mb-1.5">
+                                <span class="text-[15px]">🔗</span>
+                                <span class="text-[14px] font-semibold text-white flex-1">Format URL Tidak Valid</span>
+                                <code class="kamus-code text-[10px] bg-gray-800 text-gray-500 border border-gray-700 px-1.5 py-0.5 rounded font-mono shrink-0">INVALID_URL</code>
+                            </div>
+                            <p class="kamus-desc text-[12px] text-gray-400 leading-relaxed mb-3">URL yang dikonfigurasi di monitor tidak dapat diproses karena formatnya salah — harus diawali dengan <code class="text-amber-400">https://</code> atau <code class="text-amber-400">http://</code>. Biasanya karena URL diinput tanpa protokol atau ada karakter tidak valid.</p>
+                            <div class="bg-amber-500/5 rounded-lg p-3 border border-amber-500/20 flex items-start gap-2.5">
+                                <span class="text-[13px] shrink-0">📞</span>
+                                <p class="text-[12px] text-amber-200/90 leading-relaxed"><strong class="text-amber-300">Yang perlu dilakukan:</strong> Periksa dan perbaiki URL di panel Admin — pastikan lengkap, misalnya <code class="text-amber-300">https://kemhan.go.id</code>.</p>
+                            </div>
+                        </div>
+
+                        <!-- UNKNOWN_ERROR -->
+                        <div class="kamus-item bg-[#0d1117] border border-[#30363d] rounded-lg p-4 hover:border-[#484f58] transition-colors">
+                            <div class="flex items-center gap-2 mb-1.5">
+                                <span class="text-[15px]">❓</span>
+                                <span class="text-[14px] font-semibold text-white flex-1">Error Tidak Dikenal</span>
+                                <code class="kamus-code text-[10px] bg-gray-800 text-gray-500 border border-gray-700 px-1.5 py-0.5 rounded font-mono shrink-0">UNKNOWN_ERROR</code>
+                            </div>
+                            <p class="kamus-desc text-[12px] text-gray-400 leading-relaxed mb-3">Terjadi kesalahan yang tidak dapat dikategorikan oleh sistem. Bisa jadi error jaringan yang sangat tidak umum atau kondisi server yang tidak pernah diantisipasi sebelumnya.</p>
+                            <div class="bg-amber-500/5 rounded-lg p-3 border border-amber-500/20 flex items-start gap-2.5">
+                                <span class="text-[13px] shrink-0">📞</span>
+                                <p class="text-[12px] text-amber-200/90 leading-relaxed"><strong class="text-amber-300">Yang perlu dilakukan:</strong> Hubungi Tim IT untuk investigasi dan cek log sistem monitoring SIPANTAU.</p>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- Info Footer -->
+                <div class="mt-6 p-4 bg-emerald-500/5 border border-emerald-500/20 rounded-lg">
+                    <div class="flex items-start gap-3">
+                        <i class="fa-solid fa-circle-info text-emerald-400 mt-0.5 shrink-0"></i>
+                        <div>
+                            <p class="text-[12px] font-semibold text-emerald-400 mb-1">Catatan Sistem Monitoring</p>
+                            <p class="text-[11px] text-gray-400">Sistem ini menggunakan mekanisme <strong class="text-gray-300">Retry (Coba Ulang)</strong> sebelum menetapkan status DOWN. Artinya, jika terjadi gangguan sesaat (kedip jaringan), sistem akan mencoba ulang 2–3 kali sebelum membunyikan alarm. Ini mencegah notifikasi "alarm palsu" akibat gangguan jaringan sementara.</p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+    <!-- ===== END MODAL: KAMUS GANGGUAN ===== -->
+
+    <!-- Change Password Modal -->
+    <div id="change-password-modal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-[#161b22] border border-[#30363d] rounded-lg w-full max-w-sm flex flex-col shadow-2xl">
+            <div class="p-6 border-b border-[#30363d] flex justify-between items-center shrink-0">
+                <h3 class="text-lg font-semibold text-white tracking-tight">Ganti Password</h3>
+                <button type="button" onclick="closeChangePasswordModal()" class="text-gray-400 hover:text-white transition-colors"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form id="change-password-form" onsubmit="submitChangePassword(event)" class="p-6 space-y-4">
+                <div id="cp-alert" class="hidden p-3 rounded text-[13px] font-medium"></div>
+                <div>
+                    <label class="block text-[11px] font-medium text-gray-400 mb-1.5 uppercase tracking-wide">Password Saat Ini</label>
+                    <input type="password" id="cp-current" required autocomplete="current-password" class="w-full bg-[#0d1117] border border-[#30363d] rounded p-2 text-[13px] text-white focus:outline-none focus:border-emerald-500 transition-colors">
+                </div>
+                <div>
+                    <label class="block text-[11px] font-medium text-gray-400 mb-1.5 uppercase tracking-wide">Password Baru</label>
+                    <input type="password" id="cp-new" required minlength="8" autocomplete="new-password" class="w-full bg-[#0d1117] border border-[#30363d] rounded p-2 text-[13px] text-white focus:outline-none focus:border-emerald-500 transition-colors">
+                </div>
+                <div>
+                    <label class="block text-[11px] font-medium text-gray-400 mb-1.5 uppercase tracking-wide">Konfirmasi Password Baru</label>
+                    <input type="password" id="cp-confirm" required minlength="8" autocomplete="new-password" class="w-full bg-[#0d1117] border border-[#30363d] rounded p-2 text-[13px] text-white focus:outline-none focus:border-emerald-500 transition-colors">
+                </div>
+                <div class="flex justify-end gap-3 pt-2">
+                    <button type="button" onclick="closeChangePasswordModal()" class="px-4 py-2 text-[13px] font-medium text-gray-400 hover:text-white transition-colors">Batal</button>
+                    <button type="submit" id="cp-submit-btn" class="bg-emerald-600 hover:bg-emerald-500 text-white px-5 py-2 rounded-md text-[13px] font-medium transition-colors shadow-sm">Simpan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- [BUG FIX] Tooltip "Akar Masalah" bersama, ditempel langsung ke body
+         (bukan di dalam tabel yang overflow-hidden/overflow-x-auto) supaya
+         tidak pernah terpotong container manapun. Diposisikan via JS
+         (position: fixed) setiap kali hover baris tabel. -->
+    <div id="shared-event-tooltip" class="hidden fixed z-50 w-72 bg-[#0d1117] border border-[#484f58] rounded-lg shadow-xl p-3"></div>
+
+    <script src="/assets/js/api.js"></script>
+    <script src="/assets/js/account.js"></script>
+    <script src="/assets/js/viewer.js"></script>
+</body>
+</html>

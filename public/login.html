@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - SIPANTAU</title>
+    <meta name="description" content="Login ke SIPANTAU - Sistem Informasi Pemantauan & Analisis Network Terpadu">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        /* Apple-like system font stack */
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            background-color: #0d1117;
+            color: #c9d1d9;
+        }
+        
+        .glass-input {
+            background-color: #0d1117;
+            border: 1px solid #30363d;
+        }
+        .glass-input:focus {
+            border-color: #10b981;
+            box-shadow: 0 0 0 1px #10b981;
+            outline: none;
+        }
+
+        /* Panel kanan: background lokal tanpa gambar eksternal */
+        .brand-panel {
+            background: linear-gradient(160deg, #0d1117 0%, #0f1e16 40%, #091810 100%);
+            position: relative;
+            overflow: hidden;
+        }
+        .brand-panel::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(16,185,129,0.04) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(16,185,129,0.04) 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+        .brand-panel::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(16,185,129,0.12) 0%, transparent 70%);
+        }
+
+        @keyframes pulse-ring {
+            0% { transform: scale(1); opacity: 0.6; }
+            50% { transform: scale(1.08); opacity: 0.3; }
+            100% { transform: scale(1); opacity: 0.6; }
+        }
+        .shield-glow {
+            animation: pulse-ring 3s ease-in-out infinite;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4 lg:p-8">
+    
+    <div class="w-full max-w-5xl h-[600px] bg-[#161b22] rounded-2xl border border-[#30363d] flex flex-col md:flex-row overflow-hidden shadow-2xl relative">
+        
+        <!-- Left Panel (Login Form) -->
+        <div class="w-full md:w-1/2 p-10 lg:p-16 flex flex-col justify-center relative z-10">
+            <a href="/" class="absolute top-8 left-8 text-[13px] text-gray-500 hover:text-white transition-colors flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5"><path d="M19 12H5M12 5l-7 7 7 7"/></svg> Kembali
+            </a>
+
+            <div class="mb-10 mt-6">
+                <h2 class="text-3xl font-semibold text-white tracking-tight mb-2">Selamat Datang</h2>
+                <p class="text-[14px] text-gray-400">Silakan masuk menggunakan kredensial Anda.</p>
+            </div>
+
+            <div id="error-msg" class="hidden bg-red-500/10 border border-red-500/20 text-red-400 p-3 rounded-lg text-[13px] mb-6 font-medium"></div>
+
+            <form id="login-form" class="space-y-5">
+                <div>
+                    <label class="block text-[12px] font-medium text-gray-400 mb-2 uppercase tracking-wide" for="username">Username</label>
+                    <input type="text" id="username" name="username" required autocomplete="username" placeholder="Masukkan username" class="glass-input w-full rounded-lg px-4 py-3 text-[14px] text-white transition-all placeholder-gray-600">
+                </div>
+                <div>
+                    <label class="block text-[12px] font-medium text-gray-400 mb-2 uppercase tracking-wide" for="password">Password</label>
+                    <input type="password" id="password" name="password" required autocomplete="current-password" placeholder="••••••••" class="glass-input w-full rounded-lg px-4 py-3 text-[14px] text-white transition-all placeholder-gray-600">
+                </div>
+                <button type="submit" id="btn-login" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-medium rounded-lg px-4 py-3 text-[14px] transition-colors shadow-sm mt-4 flex items-center justify-center gap-2">
+                    <span>Masuk</span>
+                </button>
+            </form>
+        </div>
+
+        <!-- Right Panel (Branding - lokal, tanpa gambar dari internet) -->
+        <div class="hidden md:flex md:w-1/2 brand-panel relative flex-col justify-end items-center p-12 border-l border-[#30363d]">
+            <div class="relative z-10 text-center mb-8">
+                <div class="shield-glow inline-block mb-6">
+                    <div class="w-20 h-20 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mx-auto">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-10 h-10">
+                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                            <path d="M12 8v4M12 16h.01" stroke="#34d399" stroke-width="2"/>
+                        </svg>
+                    </div>
+                </div>
+                <h1 class="text-4xl font-bold text-white tracking-tight mb-3">SI<span class="text-emerald-500 font-medium">PANTAU</span></h1>
+                <p class="text-[14px] text-gray-400 leading-relaxed max-w-sm mx-auto">
+                    Sistem Informasi Pemantauan &amp; Analisis Network Terpadu.
+                </p>
+                <div class="flex items-center justify-center gap-6 mt-8">
+                    <div class="text-center">
+                        <p class="text-emerald-400 text-xl font-bold">24/7</p>
+                        <p class="text-gray-500 text-[11px]">Monitoring</p>
+                    </div>
+                    <div class="w-px h-8 bg-[#30363d]"></div>
+                    <div class="text-center">
+                        <p class="text-emerald-400 text-xl font-bold">4-Tier</p>
+                        <p class="text-gray-500 text-[11px]">Pengecekan</p>
+                    </div>
+                    <div class="w-px h-8 bg-[#30363d]"></div>
+                    <div class="text-center">
+                        <p class="text-emerald-400 text-xl font-bold">Instan</p>
+                        <p class="text-gray-500 text-[11px]">Alert</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script src="/assets/js/api.js"></script>
+    <script src="/assets/js/login.js"></script>
+</body>
+</html>

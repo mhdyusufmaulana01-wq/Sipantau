@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - SIPANTAU</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        /* Apple-like system font stack */
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            background-color: #0d1117; /* Very dark premium gray */
+            color: #c9d1d9;
+        }
+        
+        .glass-panel {
+            background-color: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        /* Table styling for box-like columns */
+        table { border-collapse: collapse; }
+        th, td { 
+            border: 1px solid #30363d; 
+        }
+        th {
+            background-color: #0d1117;
+            font-size: 11px;
+            letter-spacing: 0.05em;
+            color: #8b949e;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body class="h-screen flex flex-col overflow-hidden">
+    <!-- Navbar -->
+    <nav class="h-16 bg-[#161b22] border-b border-[#30363d] px-6 md:px-8 shrink-0 flex justify-between items-center shadow-sm z-20">
+        <div class="flex items-center gap-3">
+            <i class="fa-solid fa-gear text-emerald-400 text-xl"></i>
+            <h1 class="text-[17px] font-bold text-white tracking-wide">SI<span class="text-emerald-500 font-semibold">PANTAU</span></h1>
+            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-blue-500/10 text-blue-400 border border-blue-500/20 tracking-wide ml-1">
+                Admin Panel
+            </span>
+        </div>
+        <div class="flex items-center gap-3">
+            <a href="/" class="h-9 flex items-center gap-2 text-[13px] font-medium text-gray-200 hover:text-white border border-[#30363d] hover:border-gray-500 bg-[#21262d] hover:bg-[#28303b] px-4 rounded-lg transition-all shadow-sm">
+                <i class="fa-solid fa-arrow-left text-emerald-400 text-[12px]"></i>
+                <span>Lihat Dashboard</span>
+            </a>
+            <div id="auth-section" class="flex items-center gap-3">
+                <!-- User / Logout -->
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="flex-1 overflow-y-auto p-8">
+        <div class="max-w-7xl mx-auto">
+            <div class="flex justify-between items-end mb-6">
+                <div>
+                    <h2 class="text-xl font-semibold text-white tracking-tight mb-1">Kelola Monitor</h2>
+                    <p class="text-[13px] text-gray-400">Atur website yang ingin dipantau oleh sistem.</p>
+                </div>
+                <div class="flex items-center gap-3">
+                    <button onclick="openUserModal()" class="bg-[#21262d] hover:bg-[#30363d] text-gray-200 border border-[#30363d] px-4 py-2 rounded-md text-[13px] font-medium transition-colors shadow-sm flex items-center gap-2">
+                        <i class="fa-solid fa-users text-blue-400"></i> Kelola User
+                    </button>
+                    <button onclick="openNotificationModal()" class="bg-[#21262d] hover:bg-[#30363d] text-gray-200 border border-[#30363d] px-4 py-2 rounded-md text-[13px] font-medium transition-colors shadow-sm flex items-center gap-2">
+                        <i class="fa-brands fa-telegram text-[#2AABEE]"></i> Notifikasi Telegram
+                    </button>
+                    <button onclick="openModal()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-md text-[13px] font-medium transition-colors shadow-sm flex items-center gap-1.5">
+                        <i class="fa-solid fa-plus text-xs"></i> Tambah Website
+                    </button>
+                </div>
+            </div>
+
+            <!-- Search & Filter Bar -->
+            <div class="mb-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+                <div class="relative w-full sm:w-80">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500 text-[12px]"></i>
+                    <input type="text" id="admin-search" oninput="filterAdminMonitors(this.value)" placeholder="Cari nama website atau URL..." class="w-full bg-[#161b22] border border-[#30363d] rounded-lg pl-9 pr-4 py-2 text-[13px] text-white focus:outline-none focus:border-emerald-500/60 transition-colors placeholder-gray-500 shadow-sm">
+                </div>
+                <div id="admin-monitor-count" class="text-[12px] font-medium text-gray-400 self-end sm:self-center">
+                    <!-- Jumlah monitor akan diupdate otomatis -->
+                </div>
+            </div>
+
+            <!-- Table Container -->
+            <div class="glass-panel overflow-hidden">
+                <table class="w-full text-left">
+                    <thead>
+                        <tr class="uppercase">
+                            <th class="p-3 w-32 text-center">Status</th>
+                            <th class="p-3">Nama Website</th>
+                            <th class="p-3">URL Target</th>
+                            <th class="p-3 w-24 text-center">Interval</th>
+                            <th class="p-3 text-center w-64">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="admin-tbody" class="text-[13px] divide-y divide-[#30363d]">
+                        <tr>
+                            <td colspan="5" class="p-6 text-center text-gray-500">Memuat data...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal Form (Hidden) -->
+    <div id="monitor-modal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="glass-panel w-full max-w-lg flex flex-col max-h-[90vh]">
+            <div class="p-6 border-b border-[#30363d] flex justify-between items-center shrink-0">
+                <h3 id="modal-title" class="text-lg font-semibold text-white tracking-tight">Tambah Monitor Baru</h3>
+                <button type="button" onclick="closeModal()" class="text-gray-400 hover:text-white transition-colors"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            
+            <div class="p-6 overflow-y-auto flex-1">
+                <form id="monitor-form" class="space-y-5">
+                    <input type="hidden" id="monitor-id">
+                    
+                    <div class="space-y-4">
+                        <h4 class="text-[13px] font-semibold text-emerald-500 uppercase tracking-wider mb-2">Pengaturan Dasar</h4>
+                        
+                        <div>
+                            <label class="block text-[11px] font-medium text-gray-400 mb-1.5 uppercase tracking-wide">Nama Website</label>
+                            <input type="text" id="m-name" required placeholder="Contoh: Webmail Kemhan" class="w-full bg-[#0d1117] border border-[#30363d] rounded p-2 text-[13px] text-white focus:outline-none focus:border-emerald-500 transition-colors">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-medium text-gray-400 mb-1.5 uppercase tracking-wide">URL Target</label>
+                            <input type="url" id="m-url" required placeholder="https://..." class="w-full bg-[#0d1117] border border-[#30363d] rounded p-2 text-[13px] text-white focus:outline-none focus:border-emerald-500 transition-colors">
+                        </div>
+                        <div class="grid grid-cols-3 gap-3">
+                            <div>
+                                <label class="block text-[11px] font-medium text-gray-400 mb-1.5 uppercase tracking-wide">Interval (s)</label>
+                                <input type="number" id="m-interval" required min="10" value="60" class="w-full bg-[#0d1117] border border-[#30363d] rounded p-2 text-[13px] text-white focus:outline-none focus:border-emerald-500 transition-colors">
+                            </div>
+                            <div>
+                                <label class="block text-[11px] font-medium text-gray-400 mb-1.5 uppercase tracking-wide">Timeout (ms)</label>
+                                <input type="number" id="m-timeout" required min="1000" value="5000" class="w-full bg-[#0d1117] border border-[#30363d] rounded p-2 text-[13px] text-white focus:outline-none focus:border-emerald-500 transition-colors">
+                            </div>
+                            <div>
+                                <label class="block text-[11px] font-medium text-gray-400 mb-1.5 uppercase tracking-wide">Retries</label>
+                                <input type="number" id="m-retries" required min="0" max="10" value="2" title="Jumlah percobaan sebelum dinyatakan DOWN" class="w-full bg-[#0d1117] border border-[#30363d] rounded p-2 text-[13px] text-white focus:outline-none focus:border-emerald-500 transition-colors">
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2 mt-2">
+                            <input type="checkbox" id="m-active" checked class="w-4 h-4 accent-emerald-500 bg-[#0d1117] border-[#30363d]">
+                            <label class="text-[13px] text-gray-300">Aktifkan Pemantauan</label>
+                        </div>
+                    </div>
+                    
+                    <!-- Advanced Options Accordion -->
+                    <div class="border-t border-[#30363d] pt-4 mt-2">
+                        <button type="button" onclick="document.getElementById('advanced-settings').classList.toggle('hidden')" class="text-[13px] font-semibold text-gray-400 hover:text-white transition-colors flex items-center gap-2 w-full text-left">
+                            <i class="fa-solid fa-sliders"></i> Pengaturan Lanjutan (Opsional)
+                        </button>
+                        
+                        <div id="advanced-settings" class="hidden space-y-4 mt-4 bg-[#0d1117] p-4 rounded border border-[#30363d]">
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-[11px] font-medium text-gray-400 mb-1.5 uppercase tracking-wide">Metode HTTP</label>
+                                    <select id="m-method" class="w-full bg-[#161b22] border border-[#30363d] rounded p-2 text-[13px] text-white focus:outline-none focus:border-emerald-500 transition-colors">
+                                        <option value="GET">GET (Default)</option>
+                                        <option value="HEAD">HEAD (Ringan)</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-[11px] font-medium text-gray-400 mb-1.5 uppercase tracking-wide">Status Diterima</label>
+                                    <input type="text" id="m-status-codes" placeholder="200-299, 401, 403" value="200-299" class="w-full bg-[#161b22] border border-[#30363d] rounded p-2 text-[13px] text-white focus:outline-none focus:border-emerald-500 transition-colors">
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-start gap-2">
+                                <input type="checkbox" id="m-ignore-ssl" class="w-4 h-4 mt-0.5 accent-emerald-500 bg-[#161b22] border-[#30363d]">
+                                <div class="flex flex-col">
+                                    <label class="text-[13px] text-gray-300">Abaikan Validasi Error SSL</label>
+                                    <span class="text-[10px] text-gray-500">Centang ini jika website internal Kemhan memakai sertifikat self-signed.</span>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-[11px] font-medium text-gray-400 mb-1.5 uppercase tracking-wide">Kata Kunci Wajib di Konten (Keyword Check)</label>
+                                <input type="text" id="m-expected-keyword" placeholder="Contoh: Kementerian Pertahanan" class="w-full bg-[#161b22] border border-[#30363d] rounded p-2 text-[13px] text-white focus:outline-none focus:border-emerald-500 transition-colors">
+                                <span class="text-[10px] text-gray-500 mt-1 block">Opsional. Jika diisi, website dianggap DOWN jika kata ini tidak muncul di halaman.</span>
+                            </div>
+
+                            <div class="flex items-start gap-2">
+                                <input type="checkbox" id="m-check-defacement" checked class="w-4 h-4 mt-0.5 accent-emerald-500 bg-[#161b22] border-[#30363d]">
+                                <div class="flex flex-col">
+                                    <label class="text-[13px] text-gray-300">Deteksi Otomatis Defacement & Konten Judi Online</label>
+                                    <span class="text-[10px] text-gray-500">Mendeteksi indikasi peretasan dan kata kunci judi online berbahaya pada HTML.</span>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-[11px] font-medium text-gray-400 mb-1.5 uppercase tracking-wide">Kategori / Satker</label>
+                                <input type="text" id="m-category" placeholder="Contoh: Pusdatin, Balitbang..." class="w-full bg-[#161b22] border border-[#30363d] rounded p-2 text-[13px] text-white focus:outline-none focus:border-emerald-500 transition-colors">
+                            </div>
+                            
+                            <div>
+                                <label class="block text-[11px] font-medium text-gray-400 mb-1.5 uppercase tracking-wide">Catatan Internal & Kontak PIC</label>
+                                <textarea id="m-notes" rows="2" placeholder="Dikelola oleh Tim X, Kontak Bpk Y 0812..." class="w-full bg-[#161b22] border border-[#30363d] rounded p-2 text-[13px] text-white focus:outline-none focus:border-emerald-500 transition-colors resize-none"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            
+            <div class="p-5 border-t border-[#30363d] flex justify-end gap-3 shrink-0 bg-[#0d1117] rounded-b-lg">
+                <button type="button" onclick="closeModal()" class="px-4 py-2 text-[13px] font-medium text-gray-400 hover:text-white transition-colors">Batal</button>
+                <button type="submit" form="monitor-form" class="bg-emerald-600 hover:bg-emerald-500 text-white px-5 py-2 rounded-md text-[13px] font-medium transition-colors shadow-sm">Simpan</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- History Modal -->
+    <div id="history-modal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="glass-panel w-full max-w-4xl flex flex-col max-h-[85vh]">
+            <div class="p-6 border-b border-[#30363d] flex justify-between items-center shrink-0">
+                <h3 class="text-lg font-semibold text-white tracking-tight">Riwayat Pengecekan</h3>
+                <button onclick="closeHistoryModal()" class="text-gray-400 hover:text-white transition-colors"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="overflow-y-auto flex-1">
+                <table class="w-full text-left">
+                    <thead class="bg-[#0d1117] sticky top-0">
+                        <tr class="uppercase">
+                            <th class="p-4 w-40">Waktu</th>
+                            <th class="p-4 w-24 text-center">Status</th>
+                            <th class="p-4 w-48">Akar Masalah</th>
+                            <th class="p-4 w-28 text-center">Ping (ms)</th>
+                            <th class="p-4">Detail Pesan</th>
+                        </tr>
+                    </thead>
+                    <tbody id="history-tbody" class="text-[12px] divide-y divide-[#30363d] bg-[#161b22]">
+                        <!-- Injected via JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Deep-Scan Defacement Modal -->
+    <div id="deepscan-modal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="glass-panel w-full max-w-4xl flex flex-col max-h-[85vh]">
+            <div class="p-6 border-b border-[#30363d] flex justify-between items-center shrink-0">
+                <div>
+                    <h3 class="text-lg font-semibold text-white tracking-tight">Riwayat Deep-Scan Subdirektori</h3>
+                    <p class="text-[11px] text-gray-500 mt-0.5">Pemindaian berkala ke subhalaman situs (sitemap.xml / link homepage) untuk indikasi defacement, berjalan tiap 24 jam.</p>
+                </div>
+                <button onclick="closeDeepscanModal()" class="text-gray-400 hover:text-white transition-colors"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="overflow-y-auto flex-1">
+                <table class="w-full text-left">
+                    <thead class="bg-[#0d1117] sticky top-0">
+                        <tr class="uppercase">
+                            <th class="p-4 w-40">Waktu Scan</th>
+                            <th class="p-4 w-32 text-center">Sumber</th>
+                            <th class="p-4 w-32 text-center">Halaman Diperiksa</th>
+                            <th class="p-4 w-32 text-center">Bermasalah</th>
+                            <th class="p-4">Detail Halaman Bermasalah</th>
+                        </tr>
+                    </thead>
+                    <tbody id="deepscan-tbody" class="text-[12px] divide-y divide-[#30363d] bg-[#161b22]">
+                        <!-- Injected via JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Settings Modal -->
+    <div id="notif-modal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="glass-panel w-full max-w-lg flex flex-col max-h-[90vh]">
+            <div class="p-6 border-b border-[#30363d] flex justify-between items-center shrink-0">
+                <div class="flex items-center gap-2.5">
+                    <i class="fa-brands fa-telegram text-2xl text-[#2AABEE]"></i>
+                    <h3 class="text-lg font-semibold text-white tracking-tight">Pengaturan Notifikasi</h3>
+                </div>
+                <button type="button" onclick="closeNotificationModal()" class="text-gray-400 hover:text-white transition-colors"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            
+            <div class="p-6 overflow-y-auto flex-1 space-y-5">
+                <!-- Status Banner -->
+                <div id="notif-alert" class="hidden p-3 rounded text-[13px] font-medium"></div>
+
+                <!-- Telegram Config -->
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between pb-3 border-b border-[#30363d]">
+                        <div>
+                            <span class="text-[13px] font-semibold text-white">Notifikasi Bot Telegram</span>
+                            <p class="text-[11px] text-gray-400">Kirim alert instan saat website Kemhan DOWN atau UP.</p>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="notif-tg-enable" class="sr-only peer">
+                            <div class="w-10 h-5 bg-[#30363d] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500"></div>
+                        </label>
+                    </div>
+
+                    <div>
+                        <label class="block text-[11px] font-medium text-gray-400 mb-1.5 uppercase tracking-wide">Telegram Bot Token</label>
+                        <input type="password" id="notif-tg-token" placeholder="Contoh: 123456789:AAHk..." class="w-full bg-[#0d1117] border border-[#30363d] rounded p-2.5 text-[13px] text-white focus:outline-none focus:border-emerald-500 transition-colors font-mono">
+                        <p class="text-[10px] text-gray-500 mt-1">Dapatkan token dengan mengetik <code class="text-emerald-400">/newbot</code> ke bot <b>@BotFather</b> di Telegram.</p>
+                    </div>
+
+                    <div>
+                        <label class="block text-[11px] font-medium text-gray-400 mb-1.5 uppercase tracking-wide">Telegram Chat ID</label>
+                        <input type="text" id="notif-tg-chatid" placeholder="Contoh: 987654321 atau -1001234567890" class="w-full bg-[#0d1117] border border-[#30363d] rounded p-2.5 text-[13px] text-white focus:outline-none focus:border-emerald-500 transition-colors font-mono">
+                        <p class="text-[10px] text-gray-500 mt-1">Chat ID pribadi atau ID Grup Pusdatin. Gunakan bot <b>@userinfobot</b> untuk cek ID Anda.</p>
+                    </div>
+                </div>
+
+                <!-- Webhook Config (Optional) -->
+                <div class="border-t border-[#30363d] pt-4">
+                    <button type="button" onclick="document.getElementById('webhook-section').classList.toggle('hidden')" class="text-[12px] font-semibold text-gray-400 hover:text-white transition-colors flex items-center gap-2">
+                        <i class="fa-solid fa-code"></i> Webhook Tambahan (Discord / Slack)
+                    </button>
+                    <div id="webhook-section" class="hidden space-y-3 mt-3 bg-[#0d1117] p-3.5 rounded border border-[#30363d]">
+                        <div class="flex items-center gap-2">
+                            <input type="checkbox" id="notif-webhook-enable" class="w-4 h-4 accent-emerald-500 bg-[#161b22] border-[#30363d]">
+                            <label class="text-[12px] text-gray-300">Aktifkan Webhook</label>
+                        </div>
+                        <div>
+                            <input type="url" id="notif-webhook-url" placeholder="https://discord.com/api/webhooks/..." class="w-full bg-[#161b22] border border-[#30363d] rounded p-2 text-[12px] text-white focus:outline-none focus:border-emerald-500 transition-colors font-mono">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="p-5 border-t border-[#30363d] flex justify-between items-center shrink-0 bg-[#0d1117] rounded-b-lg">
+                <button type="button" onclick="sendTestAlert()" id="btn-test-notif" class="bg-[#21262d] hover:bg-[#30363d] text-gray-200 border border-[#30363d] px-3.5 py-2 rounded-md text-[12px] font-medium transition-colors flex items-center gap-1.5">
+                    <i class="fa-solid fa-paper-plane text-xs"></i> Kirim Pesan Tes
+                </button>
+                <div class="flex gap-2">
+                    <button type="button" onclick="closeNotificationModal()" class="px-4 py-2 text-[13px] font-medium text-gray-400 hover:text-white transition-colors">Batal</button>
+                    <button type="button" onclick="saveNotificationSettings()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-5 py-2 rounded-md text-[13px] font-medium transition-colors shadow-sm">Simpan</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Change Password Modal -->
+    <div id="change-password-modal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="glass-panel w-full max-w-sm flex flex-col">
+            <div class="p-6 border-b border-[#30363d] flex justify-between items-center shrink-0">
+                <h3 class="text-lg font-semibold text-white tracking-tight">Ganti Password</h3>
+                <button type="button" onclick="closeChangePasswordModal()" class="text-gray-400 hover:text-white transition-colors"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form id="change-password-form" onsubmit="submitChangePassword(event)" class="p-6 space-y-4">
+                <div id="cp-alert" class="hidden p-3 rounded text-[13px] font-medium"></div>
+                <div>
+                    <label class="block text-[11px] font-medium text-gray-400 mb-1.5 uppercase tracking-wide">Password Saat Ini</label>
+                    <input type="password" id="cp-current" required autocomplete="current-password" class="w-full bg-[#0d1117] border border-[#30363d] rounded p-2 text-[13px] text-white focus:outline-none focus:border-emerald-500 transition-colors">
+                </div>
+                <div>
+                    <label class="block text-[11px] font-medium text-gray-400 mb-1.5 uppercase tracking-wide">Password Baru</label>
+                    <input type="password" id="cp-new" required minlength="8" autocomplete="new-password" class="w-full bg-[#0d1117] border border-[#30363d] rounded p-2 text-[13px] text-white focus:outline-none focus:border-emerald-500 transition-colors">
+                </div>
+                <div>
+                    <label class="block text-[11px] font-medium text-gray-400 mb-1.5 uppercase tracking-wide">Konfirmasi Password Baru</label>
+                    <input type="password" id="cp-confirm" required minlength="8" autocomplete="new-password" class="w-full bg-[#0d1117] border border-[#30363d] rounded p-2 text-[13px] text-white focus:outline-none focus:border-emerald-500 transition-colors">
+                </div>
+                <div class="flex justify-end gap-3 pt-2">
+                    <button type="button" onclick="closeChangePasswordModal()" class="px-4 py-2 text-[13px] font-medium text-gray-400 hover:text-white transition-colors">Batal</button>
+                    <button type="submit" id="cp-submit-btn" class="bg-emerald-600 hover:bg-emerald-500 text-white px-5 py-2 rounded-md text-[13px] font-medium transition-colors shadow-sm">Simpan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- User Management Modal (Admin only) -->
+    <div id="user-modal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="glass-panel w-full max-w-lg flex flex-col max-h-[85vh]">
+            <div class="p-6 border-b border-[#30363d] flex justify-between items-center shrink-0">
+                <h3 class="text-lg font-semibold text-white tracking-tight">Kelola User</h3>
+                <button type="button" onclick="closeUserModal()" class="text-gray-400 hover:text-white transition-colors"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="p-6 overflow-y-auto flex-1 space-y-5">
+                <div id="user-alert" class="hidden p-3 rounded text-[13px] font-medium"></div>
+
+                <table class="w-full text-left">
+                    <thead>
+                        <tr class="uppercase text-[11px] text-gray-500">
+                            <th class="p-2 border-b border-[#30363d]">Username</th>
+                            <th class="p-2 border-b border-[#30363d] w-24 text-center">Role</th>
+                            <th class="p-2 border-b border-[#30363d] w-16 text-center">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="user-tbody" class="text-[13px] divide-y divide-[#30363d]">
+                        <tr><td colspan="3" class="p-4 text-center text-gray-500">Memuat...</td></tr>
+                    </tbody>
+                </table>
+
+                <form id="new-user-form" onsubmit="submitNewUser(event)" class="border-t border-[#30363d] pt-4 space-y-3">
+                    <h4 class="text-[13px] font-semibold text-emerald-500 uppercase tracking-wider">Tambah User Baru</h4>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-[11px] font-medium text-gray-400 mb-1.5 uppercase tracking-wide">Username</label>
+                            <input type="text" id="nu-username" required minlength="3" class="w-full bg-[#0d1117] border border-[#30363d] rounded p-2 text-[13px] text-white focus:outline-none focus:border-emerald-500 transition-colors">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-medium text-gray-400 mb-1.5 uppercase tracking-wide">Role</label>
+                            <select id="nu-role" class="w-full bg-[#0d1117] border border-[#30363d] rounded p-2 text-[13px] text-white focus:outline-none focus:border-emerald-500 transition-colors">
+                                <option value="viewer">Viewer</option>
+                                <option value="admin">Admin</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-medium text-gray-400 mb-1.5 uppercase tracking-wide">Password Awal</label>
+                        <input type="password" id="nu-password" required minlength="8" autocomplete="new-password" class="w-full bg-[#0d1117] border border-[#30363d] rounded p-2 text-[13px] text-white focus:outline-none focus:border-emerald-500 transition-colors">
+                    </div>
+                    <div class="flex justify-end">
+                        <button type="submit" class="bg-emerald-600 hover:bg-emerald-500 text-white px-5 py-2 rounded-md text-[13px] font-medium transition-colors shadow-sm">Tambah User</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="/assets/js/api.js"></script>
+    <script src="/assets/js/account.js"></script>
+    <script src="/assets/js/admin.js"></script>
+</body>
+</html>
