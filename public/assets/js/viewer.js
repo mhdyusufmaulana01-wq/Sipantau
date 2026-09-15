@@ -387,6 +387,8 @@ function selectMonitor(id, forceScroll = false) {
     let avgPing = 'N/A';
     let sslRemaining = 'N/A';
     let sslDateFormatted = '';
+    let domainRemaining = 'N/A';
+    let domainDateFormatted = '';
     
     if (checks.length > 0) {
         const lastCheck = checks[checks.length - 1];
@@ -420,6 +422,26 @@ function selectMonitor(id, forceScroll = false) {
         sslDateFormatted = exp.toLocaleDateString('id-ID', { year: 'numeric', month: 'short', day: 'numeric' });
     }
 
+    // [FEAT] Sisa masa aktif domain (WHOIS) -- domain_expiry_date sudah
+    // level-monitor (per domain INDUK, lihat db/client.js getDashboardData()).
+    if (monitor.domain_expiry_date) {
+        const exp = new Date(monitor.domain_expiry_date);
+        const now = new Date();
+        const diffDays = Math.ceil((exp - now) / (1000 * 60 * 60 * 24));
+
+        if (diffDays > 0) {
+            domainRemaining = `${diffDays} Hari`;
+            document.getElementById('d-domain').className = 'text-xl font-semibold text-emerald-400 tracking-tight';
+        } else {
+            domainRemaining = `Expired`;
+            document.getElementById('d-domain').className = 'text-xl font-semibold text-red-400 tracking-tight';
+        }
+        domainDateFormatted = exp.toLocaleDateString('id-ID', { year: 'numeric', month: 'short', day: 'numeric' });
+        domainDateFormatted += monitor.domain_name ? ` (${monitor.domain_name})` : '';
+    } else {
+        domainDateFormatted = monitor.domain_name ? `Belum ada data untuk ${monitor.domain_name}` : '';
+    }
+
     checks.forEach(c => {
         const isUp = c.status === 'UP';
         const color = isUp ? 'bg-emerald-500' : 'bg-red-500';
@@ -449,6 +471,8 @@ function selectMonitor(id, forceScroll = false) {
     document.getElementById('d-uptime').textContent = `${monitor.uptime_percent}%`;
     document.getElementById('d-ssl').textContent = sslRemaining;
     document.getElementById('d-ssl-date').textContent = sslDateFormatted;
+    document.getElementById('d-domain').textContent = domainRemaining;
+    document.getElementById('d-domain-date').textContent = domainDateFormatted;
     renderSecurityHeaderTile(monitor);
 
     const eventsTbody = document.getElementById('d-events');

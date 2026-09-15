@@ -20,6 +20,8 @@ Sistem pemantauan uptime website dan infrastruktur digital secara real-time, den
 - **Peringatan Dini Domain Akan Kedaluwarsa**: Selain SSL, sistem juga memantau **masa registrasi domain** lewat WHOIS (`whois.id`, khusus TLD `.id`) — penyebab downtime yang sering luput karena lupa perpanjang domain, yang membuat SEMUA subdomain di bawahnya mati bersamaan. Dicek per domain induk (bukan per monitor) supaya hemat query — banyak monitor bisa berbagi 1 domain induk yang sama, dan notifikasinya menyebutkan semua monitor yang akan ikut terdampak.
   > [!NOTE]
   > **Keterbatasan:** Hanya mendukung TLD `.id` (termasuk `.go.id`, `.co.id`, dst.) karena pakai server WHOIS `whois.id` secara langsung. Domain dengan TLD lain (`.com`, `.org`, dst.) memerlukan referral chain IANA yang lebih kompleks dan di luar cakupan sistem ini.
+  >
+  > Tile "Sisa Masa Aktif Domain" muncul di panel detail monitor begitu job harian pertama selesai jalan (5 menit setelah server dinyalakan) — sebelum itu tampil N/A karena belum ada data WHOIS tersimpan.
 - **Dashboard real-time**: Visualisasi status, bar chart riwayat, dan persentase uptime 30 hari
 - **Notifikasi Telegram & Webhook**: Alert otomatis saat DOWN & saat pulih
 - **Peringatan Dini SSL**: Notifikasi bertingkat (30/14/7/3/1 hari) SEBELUM sertifikat SSL kedaluwarsa — bukan setelahnya — agar engineer sempat memperpanjang sebelum website ter-blokir browser

@@ -1,6 +1,7 @@
 const Database = require('better-sqlite3');
 const path = require('path');
 const fs = require('fs');
+const { extractRegistrableDomain } = require('../engine/domainCheck');
 
 class DbClient {
   constructor(dbPath) {
@@ -391,12 +392,26 @@ class DbClient {
       const securityHeaderScore = latestWithHeaders ? latestWithHeaders.security_header_score : null;
       const securityHeadersMissing = latestWithHeaders ? JSON.parse(latestWithHeaders.security_headers_missing || '[]') : [];
 
+      // [FEAT] Domain expiry (WHOIS) untuk monitor ini -- dari domain INDUK-nya
+      // (banyak monitor bisa berbagi 1 domain induk, lihat runDomainExpiryWarnings()).
+      let domainName = null;
+      let domainExpiryDate = null;
+      try {
+        domainName = extractRegistrableDomain(new URL(m.url).hostname);
+        if (domainName) {
+          const domainRecord = this.getDomainRegistration(domainName);
+          domainExpiryDate = domainRecord ? domainRecord.expiry_date : null;
+        }
+      } catch (e) { /* URL tidak valid, biarkan null */ }
+
       data.push({
         ...m,
         uptime_percent: uptimePercent,
         uptime_window: total30d > 0 ? '30d' : 'all-time',
         security_header_score: securityHeaderScore,
         security_headers_missing: securityHeadersMissing,
+        domain_name: domainName,
+        domain_expiry_date: domainExpiryDate,
         // [BUG FIX] Sama seperti security_header_score: pakai hasil TERAKHIR
         // yang benar-benar punya data SSL (bukan cek paling akhir mentah-mentah),
         // supaya tile "Sisa Masa Aktif SSL" tidak jadi N/A kalau kebetulan cek
