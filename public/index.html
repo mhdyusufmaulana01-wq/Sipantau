@@ -69,6 +69,21 @@
             font-weight: 500;
             pointer-events: none;
         }
+        /* [POLISH] Tile "Security Header" ada di kolom paling kanan grid, jadi
+           tooltip yang dipusatkan (left:50%) bisa sedikit meluber keluar tepi
+           kanan layar di viewport sempit. Tempel ke kanan tile saja (bukan
+           dipusatkan) supaya tidak pernah meluber ke luar.
+           Vertikalnya juga dibetulkan: "bottom: 120%" bawaan dihitung relatif
+           TINGGI tile itu sendiri -- pas untuk mini-bar grafik yang pendek,
+           tapi bikin tooltip melayang jauh dari tile stat card yang jauh
+           lebih tinggi. Ganti ke jarak tetap (8px di atas tile). */
+        #d-secheaders-tooltip {
+            left: auto;
+            right: 0;
+            transform: none;
+            bottom: 100%;
+            margin-bottom: 8px;
+        }
         .tooltip .tooltip-text::after {
             content: "";
             position: absolute;
