@@ -40,6 +40,14 @@
         }
         
         /* Tooltip */
+        /* [BUG FIX] .tooltip HARUS punya position:relative supaya .tooltip-text
+           (position:absolute) nempel ke elemen ini, bukan ke ancestor lain yang
+           tidak terduga. Sebelumnya cuma .bar yang punya position:relative,
+           jadi tooltip di elemen .tooltip TANPA .bar (misal tile Security
+           Header) render di posisi salah/keluar layar -- terlihat "tidak muncul". */
+        .tooltip {
+            position: relative;
+        }
         .tooltip .tooltip-text {
             visibility: hidden;
             background-color: #0d1117;
