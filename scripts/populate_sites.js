@@ -31,8 +31,6 @@ async function populateAndInitialCheck() {
   const existingMonitors = db.getAllMonitors();
   const existingUrls = new Set(existingMonitors.map(m => m.url.replace(/\/$/, '')));
 
-  const addedMonitors = [];
-
   for (const site of sitesToAdd) {
     const normalizedUrl = site.url.replace(/\/$/, '');
     if (!existingUrls.has(normalizedUrl)) {
@@ -46,7 +44,6 @@ async function populateAndInitialCheck() {
         is_active: 1
       });
       console.log(`[+ Added] ${site.name} (${site.url}) - ID: ${id}`);
-      addedMonitors.push({ id, ...site, retry_count: 2, retry_delay_ms: 1000, timeout_ms: site.timeout });
     } else {
       console.log(`[Exists] ${site.name} sudah terdaftar.`);
     }

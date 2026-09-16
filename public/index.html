@@ -264,7 +264,7 @@
                         <div class="kamus-item bg-[#0d1117] border border-[#30363d] rounded-lg p-4 hover:border-[#484f58] transition-colors">
                             <div class="flex items-center gap-2 mb-1.5">
                                 <span class="text-[15px]">🔍</span>
-                                <span class="text-[14px] font-semibold text-white flex-1">Alamat Domain Tidak Ditemukan</span>
+                                <span class="kamus-title text-[14px] font-semibold text-white flex-1">Alamat Domain Tidak Ditemukan</span>
                                 <code class="kamus-code text-[10px] bg-gray-800 text-gray-500 border border-gray-700 px-1.5 py-0.5 rounded font-mono shrink-0">DNS_FAILED</code>
                             </div>
                             <p class="kamus-desc text-[12px] text-gray-400 leading-relaxed mb-3">Ibarat mencari nama seseorang di buku telepon tapi namanya tidak ada — sistem tidak bisa menemukan alamat dari nama domain yang dituju (misalnya <code class="text-amber-400">kemhan.go.id</code>). Biasanya karena domain kedaluwarsa, salah ketik URL, atau DNS server bermasalah.</p>
@@ -278,7 +278,7 @@
                         <div class="kamus-item bg-[#0d1117] border border-[#30363d] rounded-lg p-4 hover:border-[#484f58] transition-colors">
                             <div class="flex items-center gap-2 mb-1.5">
                                 <span class="text-[15px]">🚫</span>
-                                <span class="text-[14px] font-semibold text-white flex-1">Server Menolak Koneksi</span>
+                                <span class="kamus-title text-[14px] font-semibold text-white flex-1">Server Menolak Koneksi</span>
                                 <code class="kamus-code text-[10px] bg-gray-800 text-gray-500 border border-gray-700 px-1.5 py-0.5 rounded font-mono shrink-0">TCP_CONNECTION_REFUSED</code>
                             </div>
                             <p class="kamus-desc text-[12px] text-gray-400 leading-relaxed mb-3">Rumahnya ditemukan, tapi pintunya dikunci dari dalam — server hidup namun aplikasi web-nya (Nginx/Apache/IIS) tidak mau menerima koneksi masuk. Biasanya layanan web server mati atau diblokir firewall.</p>
@@ -292,7 +292,7 @@
                         <div class="kamus-item bg-[#0d1117] border border-[#30363d] rounded-lg p-4 hover:border-[#484f58] transition-colors">
                             <div class="flex items-center gap-2 mb-1.5">
                                 <span class="text-[15px]">⏱️</span>
-                                <span class="text-[14px] font-semibold text-white flex-1">Tidak Ada Respon Sama Sekali</span>
+                                <span class="kamus-title text-[14px] font-semibold text-white flex-1">Tidak Ada Respon Sama Sekali</span>
                                 <code class="kamus-code text-[10px] bg-gray-800 text-gray-500 border border-gray-700 px-1.5 py-0.5 rounded font-mono shrink-0">TCP_TIMEOUT</code>
                             </div>
                             <p class="kamus-desc text-[12px] text-gray-400 leading-relaxed mb-3">Dipanggil berkali-kali tapi tidak menjawab sampai waktu habis — server benar-benar bisu, tidak ada respon apapun. Kemungkinan server fisik mati, kabel data center terputus, atau sedang terkena serangan DDoS.</p>
@@ -317,7 +317,7 @@
                         <div class="kamus-item bg-[#0d1117] border border-[#30363d] rounded-lg p-4 hover:border-[#484f58] transition-colors">
                             <div class="flex items-center gap-2 mb-1.5">
                                 <span class="text-[15px]">🚷</span>
-                                <span class="text-[14px] font-semibold text-white flex-1">Error Klien — Akses Ditolak / Halaman Tidak Ditemukan</span>
+                                <span class="kamus-title text-[14px] font-semibold text-white flex-1">Error Klien — Akses Ditolak / Halaman Tidak Ditemukan</span>
                                 <code class="kamus-code text-[10px] bg-gray-800 text-gray-500 border border-gray-700 px-1.5 py-0.5 rounded font-mono shrink-0">HTTP_4XX</code>
                             </div>
                             <p class="kamus-desc text-[12px] text-gray-400 leading-relaxed mb-3">Server hidup dan merespon, tetapi menolak permintaan karena kesalahan di sisi permintaan itu sendiri — misalnya diblokir WAF (403), IP monitoring diblokir firewall, URL salah/halaman dihapus (404), atau sistem monitoring di-rate limit (429).</p>
@@ -331,7 +331,7 @@
                         <div class="kamus-item bg-[#0d1117] border border-[#30363d] rounded-lg p-4 hover:border-[#484f58] transition-colors">
                             <div class="flex items-center gap-2 mb-1.5">
                                 <span class="text-[15px]">💥</span>
-                                <span class="text-[14px] font-semibold text-white flex-1">Error Server — Aplikasi Rusak / Kelebihan Beban</span>
+                                <span class="kamus-title text-[14px] font-semibold text-white flex-1">Error Server — Aplikasi Rusak / Kelebihan Beban</span>
                                 <code class="kamus-code text-[10px] bg-gray-800 text-gray-500 border border-gray-700 px-1.5 py-0.5 rounded font-mono shrink-0">HTTP_5XX</code>
                             </div>
                             <p class="kamus-desc text-[12px] text-gray-400 leading-relaxed mb-3">Server hidup dan bisa dihubungi, tapi ada masalah di dalam kode programnya sendiri — bagaikan kasir yang masuk kerja tapi mesinnya rusak dan tidak bisa melayani. Bisa berupa error kode program (500), proxy tidak bisa ke aplikasi (502), server kelebihan muatan (503), atau aplikasi terlalu lama merespon (504).</p>
@@ -345,7 +345,7 @@
                         <div class="kamus-item bg-[#0d1117] border border-[#30363d] rounded-lg p-4 hover:border-[#484f58] transition-colors">
                             <div class="flex items-center gap-2 mb-1.5">
                                 <span class="text-[15px]">🔄</span>
-                                <span class="text-[14px] font-semibold text-white flex-1">Redirect Tak Terbatas (Loop)</span>
+                                <span class="kamus-title text-[14px] font-semibold text-white flex-1">Redirect Tak Terbatas (Loop)</span>
                                 <code class="kamus-code text-[10px] bg-gray-800 text-gray-500 border border-gray-700 px-1.5 py-0.5 rounded font-mono shrink-0">TOO_MANY_REDIRECTS</code>
                             </div>
                             <p class="kamus-desc text-[12px] text-gray-400 leading-relaxed mb-3">Server terus-menerus mengarahkan ke URL lain tanpa berhenti, membentuk lingkaran tidak berujung — sistem berhenti setelah 10 redirect agar tidak terjebak selamanya. Biasanya karena konfigurasi redirect di Nginx saling melingkar atau middleware CMS salah konfigurasi.</p>
@@ -359,7 +359,7 @@
                         <div class="kamus-item bg-[#0d1117] border border-[#30363d] rounded-lg p-4 hover:border-[#484f58] transition-colors">
                             <div class="flex items-center gap-2 mb-1.5">
                                 <span class="text-[15px]">⚠️</span>
-                                <span class="text-[14px] font-semibold text-white flex-1">Kesalahan HTTP Tidak Terkategori</span>
+                                <span class="kamus-title text-[14px] font-semibold text-white flex-1">Kesalahan HTTP Tidak Terkategori</span>
                                 <code class="kamus-code text-[10px] bg-gray-800 text-gray-500 border border-gray-700 px-1.5 py-0.5 rounded font-mono shrink-0">HTTP_ERROR</code>
                             </div>
                             <p class="kamus-desc text-[12px] text-gray-400 leading-relaxed mb-3">Terjadi kesalahan saat melakukan permintaan HTTP yang tidak termasuk kategori lainnya — bisa karena koneksi terputus di tengah proses atau error jaringan tingkat rendah yang tidak terklasifikasi.</p>
@@ -384,7 +384,7 @@
                         <div class="kamus-item bg-[#0d1117] border border-[#30363d] rounded-lg p-4 hover:border-[#484f58] transition-colors">
                             <div class="flex items-center gap-2 mb-1.5">
                                 <span class="text-[15px]">🐌</span>
-                                <span class="text-[14px] font-semibold text-white flex-1">Halaman Terlalu Lama Merespon</span>
+                                <span class="kamus-title text-[14px] font-semibold text-white flex-1">Halaman Terlalu Lama Merespon</span>
                                 <code class="kamus-code text-[10px] bg-gray-800 text-gray-500 border border-gray-700 px-1.5 py-0.5 rounded font-mono shrink-0">TIMEOUT</code>
                             </div>
                             <p class="kamus-desc text-[12px] text-gray-400 leading-relaxed mb-3">Server bisa dihubungi dan port terbuka, namun proses memuat halaman web memakan waktu melebihi batas yang ditetapkan (default: 5 detik). Biasanya tanda server sedang kewalahan — traffic tinggi, query database berat, atau RAM/CPU hampir habis.</p>
@@ -409,7 +409,7 @@
                         <div class="kamus-item bg-[#0d1117] border border-red-500/30 rounded-lg p-4 hover:border-red-500/50 transition-colors">
                             <div class="flex items-center gap-2 mb-1.5">
                                 <span class="text-[15px]">🔓</span>
-                                <span class="text-[14px] font-semibold text-white flex-1">Sertifikat Keamanan Kedaluwarsa</span>
+                                <span class="kamus-title text-[14px] font-semibold text-white flex-1">Sertifikat Keamanan Kedaluwarsa</span>
                                 <code class="kamus-code text-[10px] bg-gray-800 text-gray-500 border border-gray-700 px-1.5 py-0.5 rounded font-mono shrink-0">SSL_CERT_EXPIRED</code>
                             </div>
                             <p class="kamus-desc text-[12px] text-gray-400 leading-relaxed mb-3">"Gembok" keamanan HTTPS sudah melewati tanggal masa berlakunya. Browser modern (Chrome, Firefox) akan menampilkan peringatan merah besar kepada semua pengunjung dan memblokir akses publik.</p>
@@ -423,7 +423,7 @@
                         <div class="kamus-item bg-[#0d1117] border border-[#30363d] rounded-lg p-4 hover:border-[#484f58] transition-colors">
                             <div class="flex items-center gap-2 mb-1.5">
                                 <span class="text-[15px]">🔐</span>
-                                <span class="text-[14px] font-semibold text-white flex-1">Masalah Konfigurasi Sertifikat SSL</span>
+                                <span class="kamus-title text-[14px] font-semibold text-white flex-1">Masalah Konfigurasi Sertifikat SSL</span>
                                 <code class="kamus-code text-[10px] bg-gray-800 text-gray-500 border border-gray-700 px-1.5 py-0.5 rounded font-mono shrink-0">SSL_ERROR</code>
                             </div>
                             <p class="kamus-desc text-[12px] text-gray-400 leading-relaxed mb-3">Sertifikat keamanannya ada dan belum expired, namun ada yang tidak beres — misalnya sertifikat yang dipasang bukan milik domain tersebut (hostname tidak cocok), atau menggunakan sertifikat self-signed.</p>
@@ -437,7 +437,7 @@
                         <div class="kamus-item bg-[#0d1117] border border-[#30363d] rounded-lg p-4 hover:border-[#484f58] transition-colors">
                             <div class="flex items-center gap-2 mb-1.5">
                                 <span class="text-[15px]">⏳</span>
-                                <span class="text-[14px] font-semibold text-white flex-1">Timeout Saat Negosiasi Enkripsi SSL</span>
+                                <span class="kamus-title text-[14px] font-semibold text-white flex-1">Timeout Saat Negosiasi Enkripsi SSL</span>
                                 <code class="kamus-code text-[10px] bg-gray-800 text-gray-500 border border-gray-700 px-1.5 py-0.5 rounded font-mono shrink-0">SSL_TIMEOUT</code>
                             </div>
                             <p class="kamus-desc text-[12px] text-gray-400 leading-relaxed mb-3">Koneksi berhasil ke server, tetapi proses "jabat tangan" enkripsi SSL/TLS tidak selesai dalam batas waktu. Biasanya terjadi ketika server kelebihan beban atau ada masalah konfigurasi TLS.</p>
@@ -462,7 +462,7 @@
                         <div class="kamus-item bg-[#0d1117] border border-red-500/30 rounded-lg p-4 hover:border-red-500/50 transition-colors">
                             <div class="flex items-center gap-2 mb-1.5">
                                 <span class="text-[15px]">🚨</span>
-                                <span class="text-[14px] font-semibold text-red-300 flex-1">Indikasi Peretasan / Judi Online</span>
+                                <span class="kamus-title text-[14px] font-semibold text-red-300 flex-1">Indikasi Peretasan / Judi Online</span>
                                 <code class="kamus-code text-[10px] bg-gray-800 text-gray-500 border border-gray-700 px-1.5 py-0.5 rounded font-mono shrink-0">DEFACEMENT_DETECTED</code>
                             </div>
                             <p class="kamus-desc text-[12px] text-gray-400 leading-relaxed mb-3">Situs berhasil diakses (HTTP 200), namun isi konten halaman telah disusupi kata kunci judi online ("slot gacor", "sbobet") atau pesan peretas ("hacked by"). <strong class="text-red-400">Sangat berbahaya bagi citra instansi pertahanan.</strong></p>
@@ -476,7 +476,7 @@
                         <div class="kamus-item bg-[#0d1117] border border-[#30363d] rounded-lg p-4 hover:border-[#484f58] transition-colors">
                             <div class="flex items-center gap-2 mb-1.5">
                                 <span class="text-[15px]">🔎</span>
-                                <span class="text-[14px] font-semibold text-white flex-1">Kata Kunci Wajib Tidak Ditemukan</span>
+                                <span class="kamus-title text-[14px] font-semibold text-white flex-1">Kata Kunci Wajib Tidak Ditemukan</span>
                                 <code class="kamus-code text-[10px] bg-gray-800 text-gray-500 border border-gray-700 px-1.5 py-0.5 rounded font-mono shrink-0">KEYWORD_MISSING</code>
                             </div>
                             <p class="kamus-desc text-[12px] text-gray-400 leading-relaxed mb-3">Situs merespon tapi tidak menampilkan kata kunci yang diharapkan (misalnya nama instansi). Menandakan aplikasi mengalami blank page putih, redirect ke halaman maintenance, atau template gagal merender.</p>
@@ -501,7 +501,7 @@
                         <div class="kamus-item bg-[#0d1117] border border-[#30363d] rounded-lg p-4 hover:border-[#484f58] transition-colors">
                             <div class="flex items-center gap-2 mb-1.5">
                                 <span class="text-[15px]">🔗</span>
-                                <span class="text-[14px] font-semibold text-white flex-1">Format URL Tidak Valid</span>
+                                <span class="kamus-title text-[14px] font-semibold text-white flex-1">Format URL Tidak Valid</span>
                                 <code class="kamus-code text-[10px] bg-gray-800 text-gray-500 border border-gray-700 px-1.5 py-0.5 rounded font-mono shrink-0">INVALID_URL</code>
                             </div>
                             <p class="kamus-desc text-[12px] text-gray-400 leading-relaxed mb-3">URL yang dikonfigurasi di monitor tidak dapat diproses karena formatnya salah — harus diawali dengan <code class="text-amber-400">https://</code> atau <code class="text-amber-400">http://</code>. Biasanya karena URL diinput tanpa protokol atau ada karakter tidak valid.</p>
@@ -515,7 +515,7 @@
                         <div class="kamus-item bg-[#0d1117] border border-[#30363d] rounded-lg p-4 hover:border-[#484f58] transition-colors">
                             <div class="flex items-center gap-2 mb-1.5">
                                 <span class="text-[15px]">❓</span>
-                                <span class="text-[14px] font-semibold text-white flex-1">Error Tidak Dikenal</span>
+                                <span class="kamus-title text-[14px] font-semibold text-white flex-1">Error Tidak Dikenal</span>
                                 <code class="kamus-code text-[10px] bg-gray-800 text-gray-500 border border-gray-700 px-1.5 py-0.5 rounded font-mono shrink-0">UNKNOWN_ERROR</code>
                             </div>
                             <p class="kamus-desc text-[12px] text-gray-400 leading-relaxed mb-3">Terjadi kesalahan yang tidak dapat dikategorikan oleh sistem. Bisa jadi error jaringan yang sangat tidak umum atau kondisi server yang tidak pernah diantisipasi sebelumnya.</p>

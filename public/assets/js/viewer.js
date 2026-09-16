@@ -651,7 +651,12 @@ function filterKamus(query) {
     items.forEach(item => {
         const codes = Array.from(item.querySelectorAll('.kamus-code')).map(el => el.textContent.toLowerCase()).join(' ');
         const desc = (item.querySelector('.kamus-desc')?.textContent || '').toLowerCase();
-        const title = item.querySelector('span.text-white')?.textContent.toLowerCase() || '';
+        // [BUG FIX] Dulu pakai selector 'span.text-white' -- tidak cocok untuk
+        // entri DEFACEMENT_DETECTED yang judulnya sengaja diberi warna beda
+        // (text-red-300) supaya menonjol sebagai kasus paling parah, sehingga
+        // pencarian kata "peretasan" gagal menemukan entri itu sama sekali.
+        // '.kamus-title' adalah class penanda yang ada di SEMUA judul, apapun warnanya.
+        const title = item.querySelector('.kamus-title')?.textContent.toLowerCase() || '';
         const match = q === '' || codes.includes(q) || desc.includes(q) || title.includes(q);
         item.style.display = match ? '' : 'none';
     });

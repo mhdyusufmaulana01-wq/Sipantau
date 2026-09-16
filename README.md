@@ -150,6 +150,8 @@ Buka browser: **http://localhost:3000**
 | POST | `/api/monitors` | Admin | Tambah monitor |
 | PUT | `/api/monitors/:id` | Admin | Edit monitor |
 | DELETE | `/api/monitors/:id` | Admin | Hapus monitor |
+| PATCH | `/api/monitors/:id/toggle-active` | Admin | Pause / Resume cepat |
+| GET | `/api/monitors/:id/export` | Admin | Ekspor riwayat sebagai CSV |
 | GET | `/api/notifications/settings` | Admin | Lihat pengaturan notif |
 | POST | `/api/notifications/settings` | Admin | Simpan pengaturan notif |
 | POST | `/api/notifications/test` | Admin | Kirim pesan tes |
