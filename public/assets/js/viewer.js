@@ -293,6 +293,19 @@ async function fetchDashboardData() {
     }
 }
 
+/**
+ * Menentukan label & warna tier prioritas berdasarkan interval pengecekan.
+ * Tier 1 (Kritis, 60s) - Tier 2 (Operasional, 120s) - Tier 3 (Standar, >120s)
+ */
+function getTierInfo(intervalSeconds) {
+    if (intervalSeconds <= 60) {
+        return { label: 'Tier 1 · Kritis', short: 'T1', className: 'text-red-300 bg-red-500/10 border-red-500/20' };
+    } else if (intervalSeconds <= 120) {
+        return { label: 'Tier 2 · Operasional', short: 'T2', className: 'text-amber-300 bg-amber-500/10 border-amber-500/20' };
+    }
+    return { label: 'Tier 3 · Standar', short: 'T3', className: 'text-sky-300 bg-sky-500/10 border-sky-500/20' };
+}
+
 function renderSidebar(searchQuery = '') {
     const sidebar = document.getElementById('sidebar-list');
     sidebar.innerHTML = '';
@@ -326,12 +339,16 @@ function renderSidebar(searchQuery = '') {
         });
         
         const badgeColor = m.status === 'UP' ? 'text-emerald-400' : (m.status === 'DOWN' ? 'text-red-400' : 'text-gray-400');
-        
+        const tierInfo = getTierInfo(m.interval_seconds);
+
         // [SECURITY FIX] Temuan #2: Gunakan escapeHtml() untuk data dinamis di innerHTML
         // agar tidak rentan Stored XSS jika nama monitor mengandung karakter HTML.
         div.innerHTML = `
             <div class="flex justify-between items-center mb-2.5">
-                <span class="text-[13px] font-medium text-gray-200 truncate pr-2 tracking-tight">${escapeHtml(m.name)}</span>
+                <div class="flex items-center gap-1.5 min-w-0">
+                    <span class="text-[9px] font-bold px-1 py-[1px] rounded border shrink-0 ${tierInfo.className}" title="${tierInfo.label}">${tierInfo.short}</span>
+                    <span class="text-[13px] font-medium text-gray-200 truncate pr-2 tracking-tight">${escapeHtml(m.name)}</span>
+                </div>
                 <span class="text-[11px] ${badgeColor} font-semibold shrink-0">${escapeHtml(m.uptime_percent)}%</span>
             </div>
             <div class="flex gap-[2px] items-end h-[14px] w-full overflow-hidden">
@@ -357,7 +374,12 @@ function selectMonitor(id, forceScroll = false) {
     document.getElementById('d-name').textContent = monitor.name;
     document.getElementById('d-url').href = monitor.url;
     document.getElementById('d-url-text').textContent = monitor.url;
-    
+
+    const tierBadge = document.getElementById('d-tier-badge');
+    const tierInfo = getTierInfo(monitor.interval_seconds);
+    tierBadge.textContent = tierInfo.label;
+    tierBadge.className = `px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide border shrink-0 ${tierInfo.className}`;
+
     const badge = document.getElementById('d-status-badge');
     badge.textContent = monitor.status;
     if (monitor.status === 'UP') {

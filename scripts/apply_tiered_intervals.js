@@ -2,7 +2,7 @@ const { db } = require('../src/db/client');
 
 // [FIX] Temuan #4: Hapus 'www.kemhan.go.id' yang sudah tidak ada di database monitor
 const tier1Sites = [
-  'https://kemhan.go.id',
+  'https://www.kemhan.go.id',
   'https://mail.kemhan.go.id',
   'https://ppid.kemhan.go.id'
 ];
